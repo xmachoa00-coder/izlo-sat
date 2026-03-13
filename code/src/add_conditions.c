@@ -138,7 +138,7 @@ void second_phase_follows_first_immediately(CNF *formula, unsigned num_of_days, 
             add_literal_to_clause(c, false, FIRST_PHASE_FLAG, st.source, st.destination,day);
 
             if(!(day == num_of_days - 1)){
-                add_literal_to_clause(c, true, SECOND_PHASE_FLAG, st.source, st.destination,day);
+                add_literal_to_clause(c, true, SECOND_PHASE_FLAG, st.source, st.destination,day + 1);
             }
         }
     }
@@ -225,6 +225,9 @@ void street_between_0_and_1_repaired_in_last_two_days(CNF *formula, unsigned num
         if(num_of_days >= 2){
             Clause *c1 = create_new_clause(formula);
             add_literal_to_clause(c1, true, FIRST_PHASE_FLAG, 0, 1, num_of_days -2);
+
+            Clause *c2 = create_new_clause(formula);
+            add_literal_to_clause(c2, true, SECOND_PHASE_FLAG, 0, 1, num_of_days -1);
         }
     }
   
@@ -243,7 +246,7 @@ void no_street_to_0_repaired_during_weekend(CNF *formula, unsigned num_of_days, 
         if ((day % 7 == 5)||(day % 7 == 6)){
             for(int index_street = 0; index_street < num_of_streets; index_street++){
                 Street st = streets[index_street];
-                if(st.source == 0){
+                if((st.source == 0)||(st.destination == 0)){
                     Clause *c1 = create_new_clause(formula);
                     add_literal_to_clause(c1, false, FIRST_PHASE_FLAG, st.source, st.destination,day);
                     Clause *c2 = create_new_clause(formula);
