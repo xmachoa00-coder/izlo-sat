@@ -153,41 +153,34 @@ void second_phase_follows_first_immediately(CNF *formula, unsigned num_of_days, 
 * @param streets seznam ulic
 */
 void neighbour_streets_not_being_repaired_simultaneously(CNF *formula, unsigned num_of_days, unsigned num_of_crossroads, unsigned num_of_streets, const NeighbourLists *neighbours, const Street *streets) {
-    for (int cross = 0; cross < num_of_crossroads; cross++){
-        NeighbourList *list = &(neighbours->data[cross]);
-        for(int index1 = 0; index1 < list->size;index1++){
-            int neighbour1 = list->data[index1];
-            for (int index2 = index1 + 1; index2 < list->size; index2++){
-                int neighbour2 = list->data[index2];
+    for (unsigned i = 0; i < num_of_streets; i++) {
+        for (unsigned j = i + 1; j < num_of_streets; j++) {
+            Street s1 = streets[i];
+            Street s2 = streets[j];
 
-                int source1 = (cross < neighbour1) ? cross:neighbour1;
-                int destination1 = (cross < neighbour1) ? neighbour1:cross;
-                int source2 = (cross < neighbour2) ? cross:neighbour2;
-                int destination2 = (cross < neighbour2) ? neighbour2 : cross;
-
-                for(int day = 0; day < num_of_days; day++){
-
+            if (s1.source == s2.source || s1.source == s2.destination || 
+                s1.destination == s2.source || s1.destination == s2.destination) {
+                
+                for (unsigned day = 0; day < num_of_days; day++) {
                     Clause *c1 = create_new_clause(formula);
-                    add_literal_to_clause(c1, false, FIRST_PHASE_FLAG, source1, destination1, day);
-                    add_literal_to_clause(c1, false, FIRST_PHASE_FLAG, source2, destination2, day);
+                    add_literal_to_clause(c1, false, FIRST_PHASE_FLAG, s1.source, s1.destination, day);
+                    add_literal_to_clause(c1, false, FIRST_PHASE_FLAG, s2.source, s2.destination, day);
 
                     Clause *c2 = create_new_clause(formula);
-                    add_literal_to_clause(c2, false, FIRST_PHASE_FLAG, source1, destination1, day);
-                    add_literal_to_clause(c2, false, SECOND_PHASE_FLAG, source2, destination2, day);
+                    add_literal_to_clause(c2, false, FIRST_PHASE_FLAG, s1.source, s1.destination, day);
+                    add_literal_to_clause(c2, false, SECOND_PHASE_FLAG, s2.source, s2.destination, day);
 
                     Clause *c3 = create_new_clause(formula);
-                    add_literal_to_clause(c3, false, SECOND_PHASE_FLAG, source1, destination1, day);
-                    add_literal_to_clause(c3, false, FIRST_PHASE_FLAG, source2, destination2, day);
+                    add_literal_to_clause(c3, false, SECOND_PHASE_FLAG, s1.source, s1.destination, day);
+                    add_literal_to_clause(c3, false, FIRST_PHASE_FLAG, s2.source, s2.destination, day);
 
                     Clause *c4 = create_new_clause(formula);
-                    add_literal_to_clause(c4, false, SECOND_PHASE_FLAG, source1, destination1, day);
-                    add_literal_to_clause(c4, false, SECOND_PHASE_FLAG, source2, destination2, day);
+                    add_literal_to_clause(c4, false, SECOND_PHASE_FLAG, s1.source, s1.destination, day);
+                    add_literal_to_clause(c4, false, SECOND_PHASE_FLAG, s2.source, s2.destination, day);
                 }
             }
         }
-        
     }
-
 }
 
 
