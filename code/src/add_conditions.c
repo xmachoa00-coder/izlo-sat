@@ -122,6 +122,9 @@ void all_streets_max_one_day_of_first_phase_roadwork(CNF *formula, unsigned num_
     }
 }
 
+
+
+
 /** Funkce vytvářející klauzule ošetřující podmínku 3 ze zadání
 * @param formula výroková formule, do níž bude klauzule přidána
 * @param num_of_days počet dní
@@ -131,16 +134,22 @@ void all_streets_max_one_day_of_first_phase_roadwork(CNF *formula, unsigned num_
 * @param streets seznam ulic
 */
 void second_phase_follows_first_immediately(CNF *formula, unsigned num_of_days, unsigned num_of_crossroads, unsigned num_of_streets, const NeighbourLists *neighbours, const Street *streets) {
-    //(!Fáze1_den or Fáze2_den+1), A=>B
+    //(!Fáze1_den or Fáze2_den+1), (!Fáze2_den or Fáze1_den-1), A<=>B
     for (int index_street = 0; index_street < num_of_streets; index_street++){
         Street st = streets[index_street];
         for (int day = 0; day < num_of_days; day++){
 
-            Clause *c = create_new_clause(formula);
-            add_literal_to_clause(c, false, FIRST_PHASE_FLAG, st.source, st.destination,day);
+            Clause *c1 = create_new_clause(formula);
+            add_literal_to_clause(c1, false, FIRST_PHASE_FLAG, st.source, st.destination,day);
 
-            if(!(day == num_of_days - 1)){//poslední den zakáže začátek opravy ve fazi 1
-                add_literal_to_clause(c, true, SECOND_PHASE_FLAG, st.source, st.destination, day + 1);
+            if(!(day == num_of_days - 1)){
+                add_literal_to_clause(c1, true, SECOND_PHASE_FLAG, st.source, st.destination,day + 1);
+            }
+
+            Clause *c2 = create_new_clause(formula);//zabrání aby 2 Fáze proběhla bez první
+            add_literal_to_clause(c2, false, SECOND_PHASE_FLAG, st.source, st.destination, day);
+            if (day > 0) {
+                add_literal_to_clause(c2, true, FIRST_PHASE_FLAG, st.source, st.destination, day - 1);
             }
         }
     }
